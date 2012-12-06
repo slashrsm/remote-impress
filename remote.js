@@ -66,6 +66,41 @@ io.of('/presentation').on('connection', function(socket) {
         }
     });
 
+    // Allow other presentations to listen the same remote.
+    io.of('/presentation/' + id).on('connection', function(socket) {
+        socket.emit('controllerUrl', [nconf.get("HOST"),nconf.get("PORT")].join(":") + '/c/' + id);
+
+        observer.on('takeControl' + id, function() {
+            socket.emit('takeControl');
+        });
+
+        observer.on('next' + id, function() {
+            socket.emit('nextSlide');
+        });
+        observer.on('previous' + id, function() {
+            socket.emit('previousSlide');
+        })
+
+
+        observer.on('disconnect' + id, function() {
+
+            socket.emit('wheelDown');
+        })
+
+        socket.on('disconnect', function() {
+
+            observer.removeAllListeners('takeControl' + id);
+            observer.removeAllListeners('next' + id);
+            observer.removeAllListeners('previous' + id);
+            observer.removeAllListeners('disconnect' + id);
+            if (remotes[id]) {
+                remotes[id].emit('presentationDied');
+                remotes[id].disconnect();
+                remotes[id] = null;
+            }
+        });
+
+    });
 });
 
 io.of('/controller').on('connection', function(socket) {

@@ -1,11 +1,26 @@
-     var socket = new io.connect("<%=host%>/presentation");
+     function getURLParameter(name) {
+         return decodeURI(
+             (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+         );
+     }
+
+     var remoteImpressKey = getURLParameter('remote_impress_key');
+
+     if (remoteImpressKey === "null") {
+         var socket = new io.connect("<%=host%>/presentation");
+     }
+     else {
+         var socket = new io.connect("<%=host%>/presentation/" + remoteImpressKey);
+     }
      var presentationIdUrl = null;
      var wheel = null;
      var cover = null;
      
      socket.on('controllerUrl', function (data) {
          if (presentationIdUrl) data = presentationIdUrl;
-         showQR(data);
+         if (remoteImpressKey === "null") {
+              showQR(data);
+         }
          presentationIdUrl = data;
      });
      socket.on('takeControl', function () {
@@ -78,9 +93,14 @@ function showQR(data){
          div.style.width = "500px";
          div.style.right = "0";
          div.style.bottom = "0";
+         var idDiv = document.createElement('div');
+         idDiv.innerHTML = data + "<br/>";
+         idDiv.style.fontSize = "14px";
+         idDiv.style.textAlign = "center";
 
          div.style.backgroundColor = '#fff';
          div.appendChild(img);
+         div.appendChild(idDiv);
          if (wheel) document.body.removeChild(wheel);
          if (cover) document.body.removeChild(cover);
          wheel = div;
