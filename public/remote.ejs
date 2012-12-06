@@ -48,4 +48,23 @@ $(document).on('touchend', '#manipulator', function (evt) {
         socket.emit('nextSlide', <%= id %> );
     }
 });
+
+$(document).on('keydown', 'body', function (evt) {
+    if (evt.keyCode == 39) {
+        clean();
+        socket.emit('nextSlide', <%= id %> );
+    }
+    else if (evt.keyCode == 37) {
+        clean();
+        socket.emit('previousSlide', <%= id %> );
+    }
+});
+
+
+$(document).on('click', '#manipulator',function (evt) {
+    console.log(evt);
+        clean();
+        socket.emit('nextSlide', <%= id %> );
+});
+
 </script>
